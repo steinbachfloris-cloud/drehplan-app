@@ -12,8 +12,9 @@ const MOODS = ['I', 'A', 'T', 'N']
 const MOOD_LABELS = { I: 'INT', A: 'EXT', T: 'TAG', N: 'NACHT' }
 
 const FARBEN = [
-  '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
-  '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16',
+  '#ffffff', '#f5f5dc', '#fef08a', '#fde68a', '#fed7aa',
+  '#fca5a5', '#86efac', '#93c5fd', '#c4b5fd', '#f9a8d4',
+  '#6ee7b7', '#67e8f9', '#a5b4fc', '#d4d4d4', '#111111',
 ]
 
 const KATEGORIE_TYPES = [
@@ -102,7 +103,7 @@ export default function SceneEditor({ sceneId, onClose }) {
           <div className="flex items-center gap-3">
             <div
               className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: form.farbe || '#3b82f6' }}
+              style={{ backgroundColor: form.farbe || '#ffffff', border: '1px solid rgba(255,255,255,0.2)' }}
             />
             <h2 className="font-semibold text-white text-lg">
               {isNew ? 'Neue Szene' : `Szene ${form.bildnummer || '—'}`}
@@ -134,14 +135,22 @@ export default function SceneEditor({ sceneId, onClose }) {
         <div className="flex-1 overflow-y-auto px-6 py-5">
           {activeTab === 'allgemein' && (
             <div className="space-y-5">
-              {/* Row 1: Bildnummer + Status */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Row 1: Bildnummer + Spieltag + Status */}
+              <div className="grid grid-cols-3 gap-4">
                 <Field label="Bildnummer">
                   <input
                     className="input w-full"
-                    placeholder="z.B. 42"
+                    placeholder="z.B. 42A"
                     value={form.bildnummer}
                     onChange={(e) => set('bildnummer', e.target.value)}
+                  />
+                </Field>
+                <Field label="Spieltag">
+                  <input
+                    className="input w-full"
+                    placeholder="z.B. 2014/1"
+                    value={form.spieltag || ''}
+                    onChange={(e) => set('spieltag', e.target.value)}
                   />
                 </Field>
                 <Field label="Status">
@@ -234,24 +243,27 @@ export default function SceneEditor({ sceneId, onClose }) {
                 </Field>
               </div>
 
-              {/* Color */}
-              <Field label="Farbe">
+              {/* Color / Strip color */}
+              <Field label="Streifenfarbe">
+                <p className="text-[10px] text-gray-600 mb-2">Hintergrundfarbe des Szenen-Streifens</p>
                 <div className="flex gap-2 flex-wrap">
                   {FARBEN.map((c) => (
                     <button
                       key={c}
                       type="button"
                       onClick={() => set('farbe', c)}
-                      className={`w-7 h-7 rounded-full border-2 transition-all ${
-                        form.farbe === c ? 'border-white scale-110' : 'border-transparent hover:scale-105'
+                      className={`w-7 h-7 rounded transition-all border ${
+                        form.farbe === c
+                          ? 'ring-2 ring-accent ring-offset-1 ring-offset-dark-800 scale-110'
+                          : 'border-dark-500 hover:scale-105'
                       }`}
                       style={{ backgroundColor: c }}
                     />
                   ))}
                   <input
                     type="color"
-                    className="w-7 h-7 rounded-full border-2 border-dark-500 cursor-pointer bg-transparent"
-                    value={form.farbe || '#3b82f6'}
+                    className="w-7 h-7 rounded border border-dark-500 cursor-pointer"
+                    value={form.farbe || '#ffffff'}
                     onChange={(e) => set('farbe', e.target.value)}
                     title="Eigene Farbe"
                   />

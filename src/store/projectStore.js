@@ -19,14 +19,15 @@ const defaultCategories = () => ({
 export const createScene = (overrides = {}) => ({
   id: uuidv4(),
   bildnummer: '',
+  spieltag: '',
   synopsis: '',
   stimmung: '',
   vorstopp: false,
   seiten: 1,
-  dauer: 1,
+  dauer: 60,
   shots: 0,
   status: 'offen',
-  farbe: '#3b82f6',
+  farbe: '#ffffff',
   notizen: '',
   kameraNotizen: '',
   motive: [],
@@ -75,6 +76,8 @@ const useProjectStore = create((set, get) => ({
   loadProject: (data) => {
     set({ project: data, isDirty: false })
   },
+
+  closeProject: () => set({ project: null, isDirty: false }),
 
   setDirty: () => set({ isDirty: true }),
 
@@ -255,6 +258,51 @@ const useProjectStore = create((set, get) => ({
   getProjectJSON: () => {
     const { project } = get()
     return JSON.stringify(project, null, 2)
+  },
+
+  // Batch import from screenplay AI extraction
+  // Each item: { bildnummer, motiv, stimmung, synopsis, rollen: string[] }
+  importScenes: (scenesData) => {
+    set((s) => {
+      const kat = {
+        ...s.project.kategorien,
+        motive: [...s.project.kategorien.motive],
+        rollen: [...s.project.kategorien.rollen],
+      }
+      const szenen = { ...s.project.szenen }
+      const boneyardIds = [...s.project.boneyardIds]
+
+      const findOrCreate = (list, name) => {
+        const found = list.find((x) => x.name.toLowerCase() === name.toLowerCase())
+        if (found) return found.id
+        const id = uuidv4()
+        list.push({ id, kürzel: name.slice(0, 6).toUpperCase(), name, notizen: '' })
+        return id
+      }
+
+      for (const sd of scenesData) {
+        const motivIds = sd.motiv
+          ? [findOrCreate(kat.motive, sd.motiv)]
+          : []
+        const rollenIds = (sd.rollen || []).map((r) => findOrCreate(kat.rollen, r))
+
+        const scene = createScene({
+          bildnummer: String(sd.bildnummer ?? ''),
+          synopsis: sd.synopsis ?? '',
+          stimmung: sd.stimmung ?? '',
+          motive: motivIds,
+          rollen: rollenIds,
+          farbe: '#ffffff',
+        })
+        szenen[scene.id] = scene
+        boneyardIds.push(scene.id)
+      }
+
+      return {
+        project: { ...s.project, szenen, boneyardIds, kategorien: kat },
+        isDirty: true,
+      }
+    })
   },
 }))
 
