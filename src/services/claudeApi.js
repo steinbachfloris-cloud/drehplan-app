@@ -16,8 +16,9 @@ Antworte NUR mit einem validen JSON-Objekt ohne Markdown-Formatierung, keine Bac
 {"szenen":[{"bildnummer":"1","motiv":"Wohnzimmer","stimmung":"I/T","synopsis":"Kurze Beschreibung.","rollen":["ANNA","BOB"]}]}`
 
 function apiKey() {
-  const key = import.meta.env.VITE_ANTHROPIC_API_KEY
-  if (!key) throw new Error('VITE_ANTHROPIC_API_KEY ist nicht gesetzt.')
+  // Local: VITE_ANTHROPIC_API_KEY in .env  |  Vercel: ANTHROPIC_API_KEY (injected via vite define)
+  const key = import.meta.env.VITE_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY
+  if (!key) throw new Error('API-Key nicht gefunden. Bitte VITE_ANTHROPIC_API_KEY (lokal) oder ANTHROPIC_API_KEY (Vercel) setzen.')
   return key
 }
 
